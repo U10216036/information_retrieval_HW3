@@ -142,6 +142,7 @@ def plotNDCG():
 '''    
     
 def printMAP(numofresult):
+    #print("AP",APList)
     sum = 0
     count = 0
     for i in range(len(APList)):
@@ -184,7 +185,7 @@ def readFile(numofResult):
 
 
 def main():
-    for i in range(6):    
+    for i in range(11):    
         readFile(i)
         #plot()
         printMAP(i)
