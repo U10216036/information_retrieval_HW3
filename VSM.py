@@ -11,9 +11,9 @@ DocDict_list = []
 #ni
 QueryAllni_dict = {}
 DocAllni_dict = {}
-#revelDoc
-revelDoc_dict = {}
-
+#relevDoc
+relevDocdict_list = []
+sort_rank_initial = []
 def readQuery():
     
     path = "QUERY_WDID_NEW_middle"
@@ -33,7 +33,7 @@ def readQuery():
                 
         Querydict_list.append(vectorIndex)
         file.close()
-    print(Querydict_list)
+    #print(Querydict_list)
     #for i in range(len(Querydict_list)):
         #print(Querydict_list[i])
 
@@ -85,8 +85,8 @@ def calculateDocTF_IDF():
         for key,value in DocDict_list[k].items():
             DocDict_list[k][key] = DocDict_list[k][key]*math.log2(len(Docfilename_list)/DocAllni_dict[key])        
 
-def calculateSimilarity(Q_list,revelDocNum):
-    f = open('Results/ResultsTrainSet'+str(revelDocNum)+'.txt', 'w', encoding = 'UTF-8') 
+def calculateSimilarity(Q_list,relevDocNum):
+    f = open('Results/ResultsTrainSet'+str(relevDocNum)+'.txt', 'w', encoding = 'UTF-8') 
     for i in range(len(Q_list)):
         rank = {}  
         #calculate query vector length
@@ -103,12 +103,11 @@ def calculateSimilarity(Q_list,revelDocNum):
             #add docname and rank to dict
             rank[Docfilename_list[k]]= dotProduct/(length_d)
         sort_rank = sorted(rank.items(), key=operator.itemgetter(1),reverse = True)
-        #record revelence doc index and sum the vector
-        for index in range(len(Docfilename_list)):
-            if(sort_rank[revelDocNum][0] == Docfilename_list[index]):
-                for key,value in DocDict_list[index].items():
-                    revelDoc_dict[key] = revelDoc_dict.setdefault(key, 0) + value
-
+        #save the first result sort_rank_initial contain 16 queries results
+        if(relevDocNum == 0):
+            revelDoc_dict = {}
+            sort_rank_initial.append(sort_rank)
+            relevDocdict_list.append(revelDoc_dict)
         #write to file
         f.write('Query '+str(i+1)+" "+str(Queryfilename_list[i])+" "+str(len(rank))+"\n")
         for n in range(len(sort_rank)):
@@ -117,21 +116,36 @@ def calculateSimilarity(Q_list,revelDocNum):
         print(Queryfilename_list[i]+" Done")
         rank.clear()
     f.close()
+     
+     
+    #record revelence doc index and sum the vector
+    for q in range(len(sort_rank_initial)):
+        for index in range(len(Docfilename_list)):
+            if(sort_rank_initial[q][relevDocNum][0] == Docfilename_list[index]):
+                #print(sort_rank_initial[q][revelDocNum][0])
+                for key,value in DocDict_list[index].items():
+                    #print(DocDict_list[index].keys())
+                    #print(len(DocDict_list[index].items()))
+                    relevDocdict_list[q][key] = relevDocdict_list[q].setdefault(key, 0) + value
+                
+    #print(revelDocdict_list[0])
+    
 
-def revelenceFeedback(revelDocNum):
+def relevanceFeedback(relevDocNum):
     NewQuerydict_list = []
 
     for i in range(len(Querydict_list)):
         NewQuery_dict = {}
         for key,value in Querydict_list[i].items():
-            #modified query
-            if(key in revelDoc_dict.keys()):
-                NewQuery_dict[key] = Querydict_list[i][key] + revelDoc_dict[key]
+            NewQuery_dict[key] = Querydict_list[i][key]
+        for key,value in relevDocdict_list[i].items(): 
+            if(key in NewQuery_dict.keys()):
+                NewQuery_dict[key] += (0.8/relevDocNum)*relevDocdict_list[i][key]
             else:
-                NewQuery_dict[key] = Querydict_list[i][key] 
+                NewQuery_dict[key] = relevDocdict_list[i][key]
         NewQuerydict_list.append(NewQuery_dict)
     #print(NewQuerydict_list)
-    calculateSimilarity(NewQuerydict_list,revelDocNum)    
+    calculateSimilarity(NewQuerydict_list,relevDocNum)    
 
 def main():    
     readQuery()
@@ -141,9 +155,9 @@ def main():
     calculateDocTF_IDF()
     calculateSimilarity(Querydict_list,0)
     
-    for i in range(5):
+    for i in range(10):
         print("------iteration " + str(i+1) + "-------")
-        revelenceFeedback(i+1)
+        relevanceFeedback(i+1)
     
 
 if __name__ == "__main__":
