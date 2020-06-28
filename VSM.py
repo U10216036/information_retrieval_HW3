@@ -33,9 +33,6 @@ def readQuery():
                 
         Querydict_list.append(vectorIndex)
         file.close()
-    #print(Querydict_list)
-    #for i in range(len(Querydict_list)):
-        #print(Querydict_list[i])
 
 def readDoc():
     path = "SPLIT_DOC_WDID_NEW"
@@ -57,9 +54,7 @@ def readDoc():
         DocDict_list.append(vectorIndex)
         file.close()
     
-    #for i in range(len(DocDict_list)):
-        #print(DocDict_list[i])
-#calculate all ni        
+  
 def calculatedictAll():
     for i in range(len(Querydict_list)):
         for key,value in Querydict_list[i].items():
@@ -67,7 +62,7 @@ def calculatedictAll():
     for k in range(len(DocDict_list)):
         for key,value in DocDict_list[k].items():
             DocAllni_dict[key] = DocAllni_dict.setdefault(key, 0) + 1            
-    #print(QueryAllni_dict)        
+        
 
 def calculateQueryTF_IDF():
     
@@ -118,7 +113,6 @@ def calculateSimilarity(Q_list,relevDocNum):
     f.close()
      
      
-    #record revelence doc index and sum the vector
     for q in range(len(sort_rank_initial)):
         for index in range(len(Docfilename_list)):
             if(sort_rank_initial[q][relevDocNum][0] == Docfilename_list[index]):
@@ -128,7 +122,6 @@ def calculateSimilarity(Q_list,relevDocNum):
                     #print(len(DocDict_list[index].items()))
                     relevDocdict_list[q][key] = relevDocdict_list[q].setdefault(key, 0) + value
                 
-    #print(revelDocdict_list[0])
     
 
 def relevanceFeedback(relevDocNum):
@@ -144,7 +137,6 @@ def relevanceFeedback(relevDocNum):
             else:
                 NewQuery_dict[key] = relevDocdict_list[i][key]
         NewQuerydict_list.append(NewQuery_dict)
-    #print(NewQuerydict_list)
     calculateSimilarity(NewQuerydict_list,relevDocNum)    
 
 def main():    
